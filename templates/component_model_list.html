@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件型号管理</h2>
+
+<!-- 新增型号表单 -->
+<div class="card mb-4">
+    <div class="card-header">新增部件型号</div>
+    <div class="card-body">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">型号代码 *</label>
+                    <input type="text" class="form-control" name="model_code" required placeholder="例如 ENG-CFM56">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">类别 *</label>
+                    <input type="text" class="form-control" name="category" required placeholder="ENGINE, LANDING_GEAR...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">设计寿命(小时) *</label>
+                    <input type="number" class="form-control" name="design_life_hours" required min="0" placeholder="20000">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">维修间隔(小时)</label>
+                    <input type="number" class="form-control" name="maintenance_interval_hours" min="0" placeholder="5000">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">适用机型</label>
+                    <input type="text" class="form-control" name="applicable_aircraft" placeholder="逗号分隔">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">添加型号</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 筛选栏 -->
+<form method="get" class="row g-3 mb-3">
+    <div class="col-auto">
+        <input type="text" class="form-control" name="search" placeholder="型号代码搜索" value="{{ current_search }}">
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="category">
+            <option value="">全部类别</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">筛选</button>
+        <a href="{{ url_for('component_models') }}" class="btn btn-secondary">重置</a>
+    </div>
+</form>
+
+<!-- 型号列表 -->
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>型号代码</th>
+            <th>类别</th>
+            <th>设计寿命(小时)</th>
+            <th>维修间隔(小时)</th>
+            <th>适用机型</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in models %}
+        <tr>
+            <td>{{ m.model_code }}</td>
+            <td>{{ m.category }}</td>
+            <td>{{ m.design_life_hours }}</td>
+            <td>{{ m.maintenance_interval_hours if m.maintenance_interval_hours else '-' }}</td>
+            <td>{{ m.applicable_aircraft if m.applicable_aircraft else '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if not models %}
+<p class="text-muted">没有找到型号。</p>
+{% endif %}
+{% endblock %}

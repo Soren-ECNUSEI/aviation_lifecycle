@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件退役</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>部件 *</label>
+        <select class="form-select" name="component_id" required>
+            <option value="">选择部件</option>
+            {% for c in components %}
+            <option value="{{ c.component_id }}">{{ c.serial_number }} ({{ c.status }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>退役时间 *</label>
+        <input type="datetime-local" class="form-control" name="retire_time" required>
+    </div>
+    <div class="mb-3">
+        <label>退役原因 *</label>
+        <textarea class="form-control" name="reason" rows="3" required></textarea>
+    </div>
+    <div class="mb-3">
+        <label>审批人</label>
+        <select class="form-select" name="approved_by">
+            <option value="">无</option>
+            {% for a in approvers %}
+            <option value="{{ a.operator_id }}">{{ a.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-dark">退役</button>
+</form>
+{% endblock %}

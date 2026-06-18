@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件生命周期追溯</h2>
+<form method="post" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label>部件序列号</label>
+            <input type="text" class="form-control" name="serial_number" placeholder="ENG-2024-001" value="{{ serial_number }}" required>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">查询</button>
+        </div>
+    </div>
+</form>
+
+{% if component %}
+<!-- 基本信息 -->
+<div class="card mb-4">
+    <div class="card-header">基本信息</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr><th>序列号</th><td>{{ component.serial_number }}</td></tr>
+            <tr><th>型号</th><td>{{ component.model_code }}</td></tr>
+            <tr><th>当前状态</th><td>
+                {% if component.status == 'RETIRED' %}<span class="badge bg-danger">退役</span>
+                {% elif component.status == 'INSTALLED' %}<span class="badge bg-success">已安装</span>
+                {% elif component.status == 'MAINTENANCE' %}<span class="badge bg-info">维修中</span>
+                {% else %}{{ component.status }}{% endif %}
+            </td></tr>
+            <tr><th>累计飞行小时</th><td>{{ component.total_flight_hours }}</td></tr>
+            <tr><th>累计飞行循环</th><td>{{ component.total_flight_cycles }}</td></tr>
+            <tr><th>入库时间</th><td>{{ component.in_stock_time }}</td></tr>
+            {% if component.retirement_time %}
+            <tr><th>退役时间</th><td>{{ component.retirement_time }}</td></tr>
+            <tr><th>退役原因</th><td>{{ component.retire_reason }}</td></tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- 安装历史 -->
+<div class="card mb-4">
+    <div class="card-header">历史安装记录</div>
+    <div class="card-body">
+        {% if install_records %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>安装时间</th>
+                    <th>拆卸时间</th>
+                    <th>飞机</th>
+                    <th>位置</th>
+                    <th>安装原因</th>
+                    <th>拆卸原因</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ir in install_records %}
+                <tr>
+                    <td>{{ ir.install_time }}</td>
+                    <td>{{ ir.remove_time if ir.remove_time else '当前仍安装' }}</td>
+                    <td>{{ ir.aircraft_reg }}</td>
+                    <td>{{ ir.position }}</td>
+                    <td>{{ ir.install_reason if ir.install_reason else '-' }}</td>
+                    <td>{{ ir.remove_reason if ir.remove_reason else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">暂无安装记录</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 维修历史 -->
+<div class="card mb-4">
+    <div class="card-header">维修历史</div>
+    <div class="card-body">
+        {% if maintenance_records %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>维修工单</th>
+                    <th>类型</th>
+                    <th>开始时间</th>
+                    <th>结束时间</th>
+                    <th>结果</th>
+                    <th>技术员</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mr in maintenance_records %}
+                <tr>
+                    <td>#{{ mr.maintenance_id }}</td>
+                    <td>{{ mr.maintenance_type }}</td>
+                    <td>{{ mr.start_time }}</td>
+                    <td>{{ mr.end_time if mr.end_time else '未完成' }}</td>
+                    <td>{{ mr.result if mr.result else '-' }}</td>
+                    <td>{{ mr.technician_name if mr.technician_name else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">暂无维修记录</p>
+        {% endif %}
+    </div>
+</div>
+
+{% elif serial_number %}
+<div class="alert alert-warning">未找到部件 {{ serial_number }}，请检查序列号。</div>
+{% endif %}
+{% endblock %}

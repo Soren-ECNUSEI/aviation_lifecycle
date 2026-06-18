@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>新部件入库</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>序列号 *</label>
+        <input type="text" class="form-control" name="serial_number" required>
+    </div>
+    <div class="mb-3">
+        <label>型号 *</label>
+        <select class="form-select" name="model_id" required>
+            <option value="">请选择</option>
+            {% for m in models %}
+            <option value="{{ m.model_id }}">{{ m.model_code }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>批次号</label>
+        <input type="text" class="form-control" name="batch_no">
+    </div>
+    <div class="mb-3">
+        <label>生产日期</label>
+        <input type="date" class="form-control" name="production_date">
+    </div>
+    <div class="mb-3">
+        <label>操作员</label>
+        <select class="form-select" name="operator_id">
+            <option value="">无</option>
+            {% for op in operators %}
+            <option value="{{ op.operator_id }}">{{ op.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">入库</button>
+</form>
+{% endblock %}

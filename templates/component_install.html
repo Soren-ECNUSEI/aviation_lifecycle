@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件安装</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>部件 *</label>
+        <select class="form-select" name="component_id" required>
+            <option value="">选择可用部件</option>
+            {% for c in components %}
+            <option value="{{ c.component_id }}">{{ c.serial_number }} ({{ c.status }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>飞机 *</label>
+        <select class="form-select" name="aircraft_id" required>
+            <option value="">选择飞机</option>
+            {% for a in aircrafts %}
+            <option value="{{ a.aircraft_id }}">{{ a.registration }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>安装位置</label>
+        <input type="text" class="form-control" name="position" placeholder="例如 LEFT_WING">
+    </div>
+    <div class="mb-3">
+        <label>安装时间 *</label>
+        <input type="datetime-local" class="form-control" name="install_time" required>
+    </div>
+    <div class="mb-3">
+        <label>安装原因</label>
+        <input type="text" class="form-control" name="install_reason">
+    </div>
+    <div class="mb-3">
+        <label>安装人员</label>
+        <select class="form-select" name="operator_id">
+            <option value="">无</option>
+            {% for op in operators %}
+            <option value="{{ op.operator_id }}">{{ op.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">安装</button>
+</form>
+{% endblock %}

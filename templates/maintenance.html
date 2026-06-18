@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>维修管理</h2>
+
+<!-- 新建维修工单 -->
+<h4>创建维修工单</h4>
+<form method="post">
+    <input type="hidden" name="sub_action" value="create">
+    <div class="mb-3">
+        <label>部件 *</label>
+        <select class="form-select" name="component_id" required>
+            <option value="">选择部件</option>
+            {% for c in components %}
+            <option value="{{ c.component_id }}">{{ c.serial_number }} ({{ c.status }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>维修类型 *</label>
+        <select class="form-select" name="maintenance_type" required>
+            <option value="PREVENTIVE">预防性维修</option>
+            <option value="CORRECTIVE">修复性维修</option>
+            <option value="OVERHAUL">大修</option>
+            <option value="INSPECTION">检查</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>开始时间 *</label>
+        <input type="datetime-local" class="form-control" name="start_time" required>
+    </div>
+    <div class="mb-3">
+        <label>责任技术员</label>
+        <select class="form-select" name="technician_id">
+            <option value="">无</option>
+            {% for t in techs %}
+            <option value="{{ t.operator_id }}">{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">创建工单</button>
+</form>
+
+<hr>
+
+<!-- 完成维修 -->
+<h4>维修完成</h4>
+{% if open_orders %}
+<form method="post">
+    <input type="hidden" name="sub_action" value="complete">
+    <div class="mb-3">
+        <label>待完成工单 *</label>
+        <select class="form-select" name="maintenance_id" required>
+            {% for o in open_orders %}
+            <option value="{{ o.maintenance_id }}">#{{ o.maintenance_id }} 部件{{ o.component_id }} ({{ o.maintenance_type }}) 开始:{{ o.start_time }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>完成时间 *</label>
+        <input type="datetime-local" class="form-control" name="end_time" required>
+    </div>
+    <div class="mb-3">
+        <label>维修结果</label>
+        <input type="text" class="form-control" name="result" placeholder="例如：更换密封件，测试正常">
+    </div>
+    <button type="submit" class="btn btn-success">维修完成</button>
+</form>
+{% else %}
+<p class="text-muted">当前没有待完成的维修工单。</p>
+{% endif %}
+{% endblock %}

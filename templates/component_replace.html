@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件拆卸 / 更换</h2>
+
+<!-- 单独拆卸 -->
+<div class="card mb-4">
+    <div class="card-header">单独拆卸</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="action_type" value="remove">
+            <div class="mb-3">
+                <label>当前有效安装记录 *</label>
+                <select class="form-select" name="install_id" required>
+                    <option value="">选择要拆卸的安装</option>
+                    {% for inst in installations %}
+                    <option value="{{ inst.install_id }}">
+                        {{ inst.serial_number }} 装在 {{ inst.registration }} ({{ inst.position }})
+                        安装于 {{ inst.install_time }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>拆卸时间 *</label>
+                <input type="datetime-local" class="form-control" name="remove_time" required>
+            </div>
+            <div class="mb-3">
+                <label>拆卸原因</label>
+                <input type="text" class="form-control" name="remove_reason">
+            </div>
+            <div class="mb-3">
+                <label>操作人员</label>
+                <select class="form-select" name="operator_id">
+                    <option value="">无</option>
+                    {% for op in operators %}
+                    <option value="{{ op.operator_id }}">{{ op.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-warning">拆卸</button>
+        </form>
+    </div>
+</div>
+
+<!-- 部件更换 -->
+<div class="card">
+    <div class="card-header">部件更换（旧拆新装）</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="action_type" value="replace">
+            <div class="mb-3">
+                <label>旧安装记录 (将被关闭) *</label>
+                <select class="form-select" name="old_install_id" required>
+                    <option value="">选择要更换的当前安装</option>
+                    {% for inst in installations %}
+                    <option value="{{ inst.install_id }}">
+                        {{ inst.serial_number }} 在 {{ inst.registration }} ({{ inst.position }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>新部件 *</label>
+                <select class="form-select" name="new_component_id" required>
+                    <option value="">选择可用部件</option>
+                    {% for c in available_components %}
+                    <option value="{{ c.component_id }}">{{ c.serial_number }} ({{ c.status }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>目标飞机 *</label>
+                <select class="form-select" name="aircraft_id" required>
+                    <option value="">选择飞机</option>
+                    {% for a in aircrafts %}
+                    <option value="{{ a.aircraft_id }}">{{ a.registration }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>安装位置</label>
+                <input type="text" class="form-control" name="position" value="">
+            </div>
+            <div class="mb-3">
+                <label>更换时间 (即旧件拆卸时间 / 新件安装时间) *</label>
+                <input type="datetime-local" class="form-control" name="install_time" required>
+            </div>
+            <div class="mb-3">
+                <label>安装原因</label>
+                <input type="text" class="form-control" name="install_reason">
+            </div>
+            <div class="mb-3">
+                <label>拆卸原因</label>
+                <input type="text" class="form-control" name="remove_reason" value="更换件">
+            </div>
+            <div class="mb-3">
+                <label>操作人员</label>
+                <select class="form-select" name="operator_id">
+                    <option value="">无</option>
+                    {% for op in operators %}
+                    <option value="{{ op.operator_id }}">{{ op.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-danger">执行更换</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

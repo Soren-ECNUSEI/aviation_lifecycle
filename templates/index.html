@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>系统概览</h2>
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">活跃部件数</h5>
+                <p class="card-text display-6">{{ active_comps }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">当前安装数</h5>
+                <p class="card-text display-6">{{ installed }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">可执飞飞机</h5>
+                <p class="card-text display-6">{{ active_aircraft }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

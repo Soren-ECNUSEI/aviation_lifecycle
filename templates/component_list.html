@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>部件实例列表</h2>
+
+<!-- 筛选栏 -->
+<form method="get" class="row g-3 mb-4">
+    <div class="col-auto">
+        <input type="text" class="form-control" name="search" placeholder="序列号搜索" value="{{ current_search }}">
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="status">
+            <option value="">全部状态</option>
+            {% for s in statuses %}
+            <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="model_id">
+            <option value="">全部型号</option>
+            {% for m in models %}
+            <option value="{{ m.model_id }}" {% if current_model == m.model_id|string %}selected{% endif %}>{{ m.model_code }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">筛选</button>
+        <a href="{{ url_for('component_list') }}" class="btn btn-secondary">重置</a>
+    </div>
+</form>
+
+<!-- 部件表格 -->
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>序列号</th>
+            <th>型号</th>
+            <th>批次</th>
+            <th>生产日期</th>
+            <th>状态</th>
+            <th>累计飞行小时</th>
+            <th>累计循环</th>
+            <th>是否退役</th>
+            <th>入库时间</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in components %}
+        <tr>
+            <td>{{ c.serial_number }}</td>
+            <td>{{ c.model_code }}</td>
+            <td>{{ c.batch_no if c.batch_no else '-' }}</td>
+            <td>{{ c.production_date if c.production_date else '-' }}</td>
+            <td>
+                {% if c.status == 'INSTALLED' %}<span class="badge bg-success">已安装</span>
+                {% elif c.status == 'IN_STOCK' %}<span class="badge bg-primary">在库</span>
+                {% elif c.status == 'REMOVED' %}<span class="badge bg-warning">已拆卸</span>
+                {% elif c.status == 'MAINTENANCE' %}<span class="badge bg-info">维修中</span>
+                {% elif c.status == 'RETIRED' %}<span class="badge bg-danger">退役</span>
+                {% else %}{{ c.status }}{% endif %}
+            </td>
+            <td>{{ c.total_flight_hours }}</td>
+            <td>{{ c.total_flight_cycles }}</td>
+            <td>
+                {% if c.retired %}
+                <span class="badge bg-secondary">是</span>
+                {% else %}
+                <span class="badge bg-light text-dark">否</span>
+                {% endif %}
+            </td>
+            <td>{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if not components %}
+<p class="text-muted">没有找到部件。</p>
+{% endif %}
+{% endblock %}

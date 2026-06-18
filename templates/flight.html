@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>飞行管理</h2>
+
+<!-- 飞行日志登记 -->
+<div class="card mb-4">
+    <div class="card-header">登记飞行日志</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="action" value="add_log">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label>飞机 *</label>
+                    <select class="form-select" name="aircraft_id" required>
+                        <option value="">选择飞机</option>
+                        {% for a in aircrafts %}
+                        <option value="{{ a.aircraft_id }}">{{ a.registration }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>起飞时间 *</label>
+                    <input type="datetime-local" class="form-control" name="takeoff_time" required>
+                </div>
+                <div class="col-md-3">
+                    <label>降落时间 *</label>
+                    <input type="datetime-local" class="form-control" name="landing_time" required>
+                </div>
+                <div class="col-md-2">
+                    <label>飞行类型</label>
+                    <input type="text" class="form-control" name="flight_type" placeholder="可选">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-info w-100">记录</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 飞行统计查询 -->
+<div class="card">
+    <div class="card-header">部件飞行统计</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="action" value="query_stats">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-md-3">
+                    <label>部件序列号 *</label>
+                    <input type="text" class="form-control" name="serial_number" placeholder="ENG-2024-001" value="{{ serial_number }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label>开始时间 *</label>
+                    <input type="datetime-local" class="form-control" name="start_time" value="{{ start_time }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label>结束时间 *</label>
+                    <input type="datetime-local" class="form-control" name="end_time" value="{{ end_time }}" required>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">查询</button>
+                </div>
+            </div>
+        </form>
+
+        {% if stats_result %}
+        <hr>
+        {% if stats_result.stats %}
+        <h5>部件统计</h5>
+        <table class="table table-bordered">
+            <tr><th>序列号</th><td>{{ stats_result.stats.serial_number }}</td></tr>
+            <tr><th>飞行次数</th><td>{{ stats_result.stats.flight_count }}</td></tr>
+            <tr><th>累计飞行小时</th><td>{{ stats_result.stats.total_hours }}</td></tr>
+        </table>
+
+        {% if stats_result.aircraft_usage %}
+        <h5>所在飞机使用情况</h5>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>飞机注册号</th>
+                    <th>总飞行次数</th>
+                    <th>总飞行小时</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in stats_result.aircraft_usage %}
+                <tr>
+                    <td>{{ row.registration }}</td>
+                    <td>{{ row.total_flights }}</td>
+                    <td>{{ row.total_hours }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">该部件在指定时段内没有关联飞行记录。</p>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-warning">未找到该部件的飞行数据。</div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
