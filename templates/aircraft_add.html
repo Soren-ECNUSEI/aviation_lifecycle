@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>飞机入库</h2>
+
+<!-- 新增飞机表单 -->
+<div class="card mb-4">
+    <div class="card-header">新增飞机</div>
+    <div class="card-body">
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">注册号 *</label>
+                    <input type="text" class="form-control" name="registration" required placeholder="例如 B-1234">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">型号 *</label>
+                    <input type="text" class="form-control" name="model" required placeholder="例如 B737-800">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">状态</label>
+                    <select class="form-select" name="status">
+                        {% for s in statuses %}
+                        <option value="{{ s }}" {% if s == 'ACTIVE' %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">入档日期 *</label>
+                    <input type="date" class="form-control" name="entry_date" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success">入库</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 飞机列表 -->
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>注册号</th>
+            <th>型号</th>
+            <th>状态</th>
+            <th>入档日期</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in aircrafts %}
+        <tr>
+            <td>{{ a.aircraft_id }}</td>
+            <td>{{ a.registration }}</td>
+            <td>{{ a.model }}</td>
+            <td>{{ a.status }}</td>
+            <td>{{ a.entry_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if not aircrafts %}
+<p class="text-muted">暂无飞机记录。</p>
+{% endif %}
+{% endblock %}
