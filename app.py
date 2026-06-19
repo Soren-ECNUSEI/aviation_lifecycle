@@ -17,11 +17,24 @@ db_config = {
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+def fmt_datetime(s):
+    """将 datetime-local 输入格式 (YYYY-MM-DDTHH:MM) 转为 MySQL DATETIME 格式 (YYYY-MM-DD HH:MM:SS)"""
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        return s  # 已经是正确格式则原样返回
+
 def call_procedure(proc_name, args):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.callproc(proc_name, args)
+        placeholders = ', '.join(['%s'] * len(args))
+        cursor.execute(f"CALL {proc_name}({placeholders})", args)
+        # 消费存储过程内部语句（INSERT/UPDATE）产生的结果集
+        for _ in cursor.stored_results():
+            pass
         conn.commit()
         return True, '操作成功'
     except mysql.connector.Error as err:
@@ -131,7 +144,7 @@ def component_add():
 def component_install():
     if request.method == 'POST':
         args = (int(request.form['component_id']), int(request.form['aircraft_id']),
-                request.form['position'], request.form['install_time'],
+                request.form['position'], fmt_datetime(request.form['install_time']),
                 request.form.get('install_reason', ''),
                 int(request.form.get('operator_id', 0)) if request.form.get('operator_id') else None)
         success, msg = call_procedure('InstallComponent', args)
@@ -155,14 +168,14 @@ def component_replace():
     if request.method == 'POST':
         action = request.form['action_type']
         if action == 'remove':
-            args = (int(request.form['install_id']), request.form['remove_time'],
+            args = (int(request.form['install_id']), fmt_datetime(request.form['remove_time']),
                     request.form.get('remove_reason', ''),
                     int(request.form.get('operator_id', 0)) if request.form.get('operator_id') else None)
             success, msg = call_procedure('RemoveComponent', args)
         elif action == 'replace':
             args = (int(request.form['old_install_id']), int(request.form['new_component_id']),
                     int(request.form['aircraft_id']), request.form['position'],
-                    request.form['install_time'], request.form.get('install_reason', ''),
+                    fmt_datetime(request.form['install_time']), request.form.get('install_reason', ''),
                     request.form.get('remove_reason', ''),
                     int(request.form.get('operator_id', 0)) if request.form.get('operator_id') else None)
             success, msg = call_procedure('ReplaceComponent', args)
@@ -197,11 +210,11 @@ def maintenance():
         sub = request.form['sub_action']
         if sub == 'create':
             args = (int(request.form['component_id']), request.form['maintenance_type'],
-                    request.form['start_time'],
+                    fmt_datetime(request.form['start_time']),
                     int(request.form.get('technician_id', 0)) if request.form.get('technician_id') else None)
             success, msg = call_procedure('CreateMaintenanceRecord', args)
         elif sub == 'complete':
-            args = (int(request.form['maintenance_id']), request.form['end_time'],
+            args = (int(request.form['maintenance_id']), fmt_datetime(request.form['end_time']),
                     request.form['result'])
             success, msg = call_procedure('CompleteMaintenance', args)
         else:
@@ -224,7 +237,7 @@ def maintenance():
 @app.route('/component/retire', methods=['GET', 'POST'])
 def component_retire():
     if request.method == 'POST':
-        args = (int(request.form['component_id']), request.form['retire_time'],
+        args = (int(request.form['component_id']), fmt_datetime(request.form['retire_time']),
                 request.form['reason'],
                 int(request.form.get('approved_by', 0)) if request.form.get('approved_by') else None)
         success, msg = call_procedure('RetireComponent', args)
@@ -258,8 +271,8 @@ def flight():
     if request.method == 'POST':
         action = request.form.get('action', '')
         if action == 'add_log':
-            args = (int(request.form['aircraft_id']), request.form['takeoff_time'],
-                    request.form['landing_time'], request.form.get('flight_type', ''))
+            args = (int(request.form['aircraft_id']), fmt_datetime(request.form['takeoff_time']),
+                    fmt_datetime(request.form['landing_time']), request.form.get('flight_type', ''))
             success, msg = call_procedure('AddFlightLog', args)
             flash(msg, 'success' if success else 'danger')
             return redirect(url_for('flight'))
