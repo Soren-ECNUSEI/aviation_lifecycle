@@ -63,7 +63,7 @@
                 <label>新部件 *</label>
                 <select class="form-select" name="new_component_id" required>
                     <option value="">选择可用部件</option>
-                    {% for c in available_components %}
+                    {% for c in available %}
                     <option value="{{ c.component_id }}">{{ c.serial_number }} ({{ c.status }})</option>
                     {% endfor %}
                 </select>
