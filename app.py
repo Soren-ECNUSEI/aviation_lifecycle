@@ -46,6 +46,66 @@ def index():
     conn.close()
     return render_template('index.html', active_comps=active_comps, installed=installed, active_aircraft=active_aircraft)
 
+# ---------- 人员入档 ----------
+@app.route('/operator/add', methods=['GET', 'POST'])
+def operator_add():
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO operator (name, role, contact) VALUES (%s, %s, %s)",
+                (request.form['name'], request.form['role'],
+                 request.form.get('contact') or None)
+            )
+            conn.commit()
+            flash('人员入档成功', 'success')
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'入档失败: {err.msg}', 'danger')
+        finally:
+            cursor.close()
+            conn.close()
+        return redirect(url_for('operator_add'))
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT operator_id, name, role, contact FROM operator ORDER BY operator_id DESC")
+    operators = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    roles = ['INSTALLER', 'TECHNICIAN', 'APPROVER', 'ADMIN']
+    return render_template('operator_add.html', operators=operators, roles=roles)
+
+# ---------- 飞机入库 ----------
+@app.route('/aircraft/add', methods=['GET', 'POST'])
+def aircraft_add():
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO aircraft (registration, model, status, entry_date) VALUES (%s, %s, %s, %s)",
+                (request.form['registration'], request.form['model'],
+                 request.form.get('status', 'ACTIVE'), request.form['entry_date'])
+            )
+            conn.commit()
+            flash('飞机入库成功', 'success')
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'入库失败: {err.msg}', 'danger')
+        finally:
+            cursor.close()
+            conn.close()
+        return redirect(url_for('aircraft_add'))
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT aircraft_id, registration, model, status, entry_date FROM aircraft ORDER BY aircraft_id DESC")
+    aircrafts = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    statuses = ['ACTIVE', 'MAINTENANCE', 'RETIRED']
+    return render_template('aircraft_add.html', aircrafts=aircrafts, statuses=statuses)
+
 # ---------- 部件入库 ----------
 @app.route('/component/add', methods=['GET', 'POST'])
 def component_add():
