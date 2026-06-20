@@ -217,6 +217,28 @@ def maintenance():
             args = (int(request.form['maintenance_id']), fmt_datetime(request.form['end_time']),
                     request.form['result'])
             success, msg = call_procedure('CompleteMaintenance', args)
+            if success:
+                # 维修完成后，若部件仍有有效安装记录则恢复为已安装状态
+                conn2 = get_db_connection()
+                cur2 = conn2.cursor(dictionary=True)
+                cur2.execute(
+                    "SELECT component_id FROM maintenance_record WHERE maintenance_id = %s",
+                    (int(request.form['maintenance_id']),)
+                )
+                mr = cur2.fetchone()
+                if mr:
+                    cur2.execute(
+                        "SELECT 1 FROM installation_record WHERE component_id = %s AND remove_time IS NULL",
+                        (mr['component_id'],)
+                    )
+                    if cur2.fetchone():
+                        cur2.execute(
+                            "UPDATE component SET status = 'INSTALLED' WHERE component_id = %s",
+                            (mr['component_id'],)
+                        )
+                        conn2.commit()
+                cur2.close()
+                conn2.close()
         else:
             success, msg = False, '未知操作'
         flash(msg, 'success' if success else 'danger')
