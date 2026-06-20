@@ -11,7 +11,7 @@
  Target Server Version : 80045 (8.0.45)
  File Encoding         : 65001
 
- Date: 19/06/2026 16:14:20
+ Date: 20/06/2026 18:10:38
 */
 
 SET NAMES utf8mb4;
@@ -81,7 +81,7 @@ CREATE TABLE `flight_log`  (
   INDEX `idx_flight_aircraft_time`(`aircraft_id` ASC, `takeoff_time` ASC) USING BTREE,
   CONSTRAINT `flight_log_ibfk_1` FOREIGN KEY (`aircraft_id`) REFERENCES `aircraft` (`aircraft_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_flight_time` CHECK (`takeoff_time` < `landing_time`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for installation_record
@@ -106,7 +106,7 @@ CREATE TABLE `installation_record`  (
   CONSTRAINT `installation_record_ibfk_2` FOREIGN KEY (`aircraft_id`) REFERENCES `aircraft` (`aircraft_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `installation_record_ibfk_3` FOREIGN KEY (`installed_by`) REFERENCES `operator` (`operator_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_install_remove_time` CHECK ((`remove_time` is null) or (`install_time` < `remove_time`))
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for maintenance_record
@@ -126,7 +126,7 @@ CREATE TABLE `maintenance_record`  (
   CONSTRAINT `maintenance_record_ibfk_1` FOREIGN KEY (`component_id`) REFERENCES `component` (`component_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `maintenance_record_ibfk_2` FOREIGN KEY (`technician_id`) REFERENCES `operator` (`operator_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_maintenance_time` CHECK ((`end_time` is null) or (`start_time` < `end_time`))
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for operator
@@ -691,6 +691,34 @@ DROP TRIGGER IF EXISTS `trg_prevent_delete_install`;
 delimiter ;;
 CREATE TRIGGER `trg_prevent_delete_install` BEFORE DELETE ON `installation_record` FOR EACH ROW BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '禁止物理删除安装记录，历史不可覆盖';
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table installation_record
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_install_sync_status`;
+delimiter ;;
+CREATE TRIGGER `trg_install_sync_status` AFTER INSERT ON `installation_record` FOR EACH ROW BEGIN
+    UPDATE component
+    SET status = 'INSTALLED'
+    WHERE component_id = NEW.component_id;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table installation_record
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_remove_sync_status`;
+delimiter ;;
+CREATE TRIGGER `trg_remove_sync_status` AFTER UPDATE ON `installation_record` FOR EACH ROW BEGIN
+    IF OLD.remove_time IS NULL AND NEW.remove_time IS NOT NULL THEN
+        UPDATE component
+        SET status = 'REMOVED'
+        WHERE component_id = NEW.component_id;
+    END IF;
 END
 ;;
 delimiter ;

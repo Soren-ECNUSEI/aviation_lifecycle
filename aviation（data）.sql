@@ -11,7 +11,7 @@
  Target Server Version : 80045 (8.0.45)
  File Encoding         : 65001
 
- Date: 19/06/2026 16:14:12
+ Date: 20/06/2026 18:11:01
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `aircraft`  (
 -- ----------------------------
 -- Records of aircraft
 -- ----------------------------
-INSERT INTO `aircraft` VALUES (1, 'A-0001', 'AIR01', 'ACTIVE', '2025-10-06');
+INSERT INTO `aircraft` VALUES (1, 'A-0001', 'AIR01', 'ACTIVE', '2026-02-03');
 INSERT INTO `aircraft` VALUES (2, 'A-0002', 'AIR02', 'ACTIVE', '2025-11-29');
 INSERT INTO `aircraft` VALUES (4, 'A-0003', 'AIR03', 'ACTIVE', '2026-02-12');
 INSERT INTO `aircraft` VALUES (5, 'A-0004', 'AIR03', 'ACTIVE', '2026-02-10');
@@ -63,10 +63,10 @@ CREATE TABLE `component`  (
 -- ----------------------------
 -- Records of component
 -- ----------------------------
-INSERT INTO `component` VALUES (1, '001', 1, '111', '2025-09-18', 'INSTALLED', 0.02, 1, 0, '2026-06-19 15:14:44');
-INSERT INTO `component` VALUES (2, '002', 2, '222', '2026-03-03', 'REMOVED', 0.00, 0, 0, '2026-06-19 15:40:47');
-INSERT INTO `component` VALUES (3, '003', 2, '333', '2026-01-15', 'IN_STOCK', 0.00, 0, 0, '2026-06-19 15:41:00');
-INSERT INTO `component` VALUES (4, '004（E01）', 1, '444', '2026-06-04', 'IN_STOCK', 0.00, 0, 0, '2026-06-19 15:52:38');
+INSERT INTO `component` VALUES (1, '001', 1, '111', '2025-09-18', 'RETIRED', 0.02, 1, 1, '2026-06-19 15:14:44');
+INSERT INTO `component` VALUES (2, '002', 2, '222', '2026-03-03', 'REMOVED', 0.05, 1, 0, '2026-06-19 15:40:47');
+INSERT INTO `component` VALUES (3, '003', 2, '333', '2026-01-15', 'IN_STOCK', 0.02, 1, 0, '2026-06-19 15:41:00');
+INSERT INTO `component` VALUES (4, '004（E01）', 1, '444', '2026-06-04', 'INSTALLED', 0.00, 0, 0, '2026-06-19 15:52:38');
 
 -- ----------------------------
 -- Table structure for component_model
@@ -103,12 +103,14 @@ CREATE TABLE `flight_log`  (
   INDEX `idx_flight_aircraft_time`(`aircraft_id` ASC, `takeoff_time` ASC) USING BTREE,
   CONSTRAINT `flight_log_ibfk_1` FOREIGN KEY (`aircraft_id`) REFERENCES `aircraft` (`aircraft_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_flight_time` CHECK (`takeoff_time` < `landing_time`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of flight_log
 -- ----------------------------
 INSERT INTO `flight_log` VALUES (1, 1, '2026-06-19 15:16:00', '2026-06-19 15:17:00', '');
+INSERT INTO `flight_log` VALUES (2, 2, '2026-06-19 16:21:00', '2026-06-19 16:24:00', '客运');
+INSERT INTO `flight_log` VALUES (3, 2, '2026-06-20 17:47:00', '2026-06-20 17:48:00', '客运');
 
 -- ----------------------------
 -- Table structure for installation_record
@@ -133,13 +135,16 @@ CREATE TABLE `installation_record`  (
   CONSTRAINT `installation_record_ibfk_2` FOREIGN KEY (`aircraft_id`) REFERENCES `aircraft` (`aircraft_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `installation_record_ibfk_3` FOREIGN KEY (`installed_by`) REFERENCES `operator` (`operator_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_install_remove_time` CHECK ((`remove_time` is null) or (`install_time` < `remove_time`))
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of installation_record
 -- ----------------------------
-INSERT INTO `installation_record` VALUES (1, 1, 1, 'LEFT_WING', '2026-06-19 15:16:00', NULL, '初次安装', NULL, 4);
+INSERT INTO `installation_record` VALUES (1, 1, 1, 'LEFT_WING', '2026-06-19 15:16:00', '2026-06-19 16:16:00', '初次安装', '更换件', 4);
 INSERT INTO `installation_record` VALUES (2, 2, 4, 'LEFT_WING', '2026-06-19 15:42:00', '2026-06-19 15:48:00', '初次安装', '型号不匹配', 4);
+INSERT INTO `installation_record` VALUES (3, 2, 2, 'LEFT_WING', '2026-06-19 16:16:00', '2026-06-20 17:46:00', '更换', '更换件', 1);
+INSERT INTO `installation_record` VALUES (4, 4, 1, 'LEFT_WING', '2026-06-19 16:11:00', NULL, '编不出来了', NULL, 4);
+INSERT INTO `installation_record` VALUES (5, 3, 2, 'LEFT_WING', '2026-06-20 17:46:00', NULL, '更换', NULL, 4);
 
 -- ----------------------------
 -- Table structure for maintenance_record
@@ -159,11 +164,13 @@ CREATE TABLE `maintenance_record`  (
   CONSTRAINT `maintenance_record_ibfk_1` FOREIGN KEY (`component_id`) REFERENCES `component` (`component_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `maintenance_record_ibfk_2` FOREIGN KEY (`technician_id`) REFERENCES `operator` (`operator_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_maintenance_time` CHECK ((`end_time` is null) or (`start_time` < `end_time`))
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of maintenance_record
 -- ----------------------------
+INSERT INTO `maintenance_record` VALUES (1, 2, 'PREVENTIVE', '2026-06-19 16:21:00', '2026-06-19 16:25:00', '正常', 2);
+INSERT INTO `maintenance_record` VALUES (2, 3, 'PREVENTIVE', '2026-06-20 17:51:00', '2026-06-20 17:53:00', '', NULL);
 
 -- ----------------------------
 -- Table structure for operator
@@ -205,6 +212,7 @@ CREATE TABLE `scrap_retirement_record`  (
 -- ----------------------------
 -- Records of scrap_retirement_record
 -- ----------------------------
+INSERT INTO `scrap_retirement_record` VALUES (1, 1, '2026-06-19 16:20:00', '损坏', 3);
 
 -- ----------------------------
 -- Procedure structure for AddComponent
@@ -740,6 +748,34 @@ DROP TRIGGER IF EXISTS `trg_prevent_delete_install`;
 delimiter ;;
 CREATE TRIGGER `trg_prevent_delete_install` BEFORE DELETE ON `installation_record` FOR EACH ROW BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '禁止物理删除安装记录，历史不可覆盖';
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table installation_record
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_install_sync_status`;
+delimiter ;;
+CREATE TRIGGER `trg_install_sync_status` AFTER INSERT ON `installation_record` FOR EACH ROW BEGIN
+    UPDATE component
+    SET status = 'INSTALLED'
+    WHERE component_id = NEW.component_id;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table installation_record
+-- ----------------------------
+DROP TRIGGER IF EXISTS `trg_remove_sync_status`;
+delimiter ;;
+CREATE TRIGGER `trg_remove_sync_status` AFTER UPDATE ON `installation_record` FOR EACH ROW BEGIN
+    IF OLD.remove_time IS NULL AND NEW.remove_time IS NOT NULL THEN
+        UPDATE component
+        SET status = 'REMOVED'
+        WHERE component_id = NEW.component_id;
+    END IF;
 END
 ;;
 delimiter ;
