@@ -11,7 +11,7 @@
  Target Server Version : 80045 (8.0.45)
  File Encoding         : 65001
 
- Date: 20/06/2026 18:11:01
+ Date: 20/06/2026 18:49:11
 */
 
 SET NAMES utf8mb4;
@@ -64,8 +64,8 @@ CREATE TABLE `component`  (
 -- Records of component
 -- ----------------------------
 INSERT INTO `component` VALUES (1, '001', 1, '111', '2025-09-18', 'RETIRED', 0.02, 1, 1, '2026-06-19 15:14:44');
-INSERT INTO `component` VALUES (2, '002', 2, '222', '2026-03-03', 'REMOVED', 0.05, 1, 0, '2026-06-19 15:40:47');
-INSERT INTO `component` VALUES (3, '003', 2, '333', '2026-01-15', 'IN_STOCK', 0.02, 1, 0, '2026-06-19 15:41:00');
+INSERT INTO `component` VALUES (2, '002', 2, '222', '2026-03-03', 'IN_STOCK', 0.05, 1, 0, '2026-06-19 15:40:47');
+INSERT INTO `component` VALUES (3, '003', 2, '333', '2026-01-15', 'INSTALLED', 0.02, 1, 0, '2026-06-19 15:41:00');
 INSERT INTO `component` VALUES (4, '004（E01）', 1, '444', '2026-06-04', 'INSTALLED', 0.00, 0, 0, '2026-06-19 15:52:38');
 
 -- ----------------------------
@@ -164,13 +164,15 @@ CREATE TABLE `maintenance_record`  (
   CONSTRAINT `maintenance_record_ibfk_1` FOREIGN KEY (`component_id`) REFERENCES `component` (`component_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `maintenance_record_ibfk_2` FOREIGN KEY (`technician_id`) REFERENCES `operator` (`operator_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `chk_maintenance_time` CHECK ((`end_time` is null) or (`start_time` < `end_time`))
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of maintenance_record
 -- ----------------------------
 INSERT INTO `maintenance_record` VALUES (1, 2, 'PREVENTIVE', '2026-06-19 16:21:00', '2026-06-19 16:25:00', '正常', 2);
 INSERT INTO `maintenance_record` VALUES (2, 3, 'PREVENTIVE', '2026-06-20 17:51:00', '2026-06-20 17:53:00', '', NULL);
+INSERT INTO `maintenance_record` VALUES (3, 3, 'PREVENTIVE', '2026-06-20 18:13:00', '2026-06-20 18:27:00', '正常', 2);
+INSERT INTO `maintenance_record` VALUES (4, 2, 'PREVENTIVE', '2026-06-20 18:12:00', '2026-06-20 18:36:00', '正常', 2);
 
 -- ----------------------------
 -- Table structure for operator
